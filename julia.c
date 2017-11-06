@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   mandelbrot.c                                       :+:      :+:    :+:   */
+/*   julia.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mwingrov <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -10,9 +10,10 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "libft.h"
 #include "fractal.h"
 
-int 	colorConverter(t_env *z)
+int 	colorConverterJ(t_env *z)
 {
 	int   hexValue;
 
@@ -22,7 +23,7 @@ int 	colorConverter(t_env *z)
 	return (hexValue); 
 }
 
-int		findMandelbrot(double cr, double ci, int max_iterations)
+int		findJulia(double cr, double ci, int max_iterations)
 {
 	int		i;
 	double	zr;
@@ -31,16 +32,16 @@ int		findMandelbrot(double cr, double ci, int max_iterations)
 	double zizi;
 	double 	temp;
 
+	i = 0;
 	zr = cr;
 	zi = ci;
-	i = 0;
 	while (i < max_iterations)
 	{
 		zrzr = zr * zr;
 		zizi = zi * zi;
 		temp = -2.0 * zr * zi;
-		zr = zizi - zrzr - cr;
-		zi = temp - ci;
+		zr = zizi - zrzr + 0.835;
+		zi = temp - 0.2321;
 		if (zrzr * zrzr + zizi * zizi > 4.0)
 			break;
 		i++;
@@ -48,7 +49,7 @@ int		findMandelbrot(double cr, double ci, int max_iterations)
 	return (i);
 }
 
-double		mapToReal(int x, int imageWidth, double minR, double maxR)
+double		mapToRealJ(int x, int imageWidth, double minR, double maxR)
 {
 	double range;
 
@@ -56,7 +57,7 @@ double		mapToReal(int x, int imageWidth, double minR, double maxR)
 	return (x * (range / imageWidth) + minR);
 }
 
-double		mapToimaginary(int y, int imageHeight, double minI, double maxI)
+double		mapToimaginaryJ(int y, int imageHeight, double minI, double maxI)
 {
 	double range;
 
@@ -64,18 +65,8 @@ double		mapToimaginary(int y, int imageHeight, double minI, double maxI)
 	return (y * (range / imageHeight) + minI);
 }
 
-void    mlx_put_pixel_image(int x, int y, t_env *z, int color)
+int     my_key_functJ(int keycode, int x, int y, t_env *z)
 {
-	int pos;
-
-	pos = (y * IM_X) + x;
-	z->data[pos] = color;
-}
-
-int		my_key_funct(int keycode, int x, int y, t_env *z)
-{
-	x = 600;
-	y = 600;
 	if (keycode == 53)
 		exit(0);
 	if (keycode == 1 || (keycode == 5 && x <= WIN_X))
@@ -86,11 +77,11 @@ int		my_key_funct(int keycode, int x, int y, t_env *z)
 	{
 		z->zoom -= 0.2;
 	}
-	drawMandelbrot(z);
-	return(0);
+		drawJulia(z);
+	return (0);
 }
 
-void 	    drawMandelbrot(t_env *z)
+void 	    drawJulia(t_env *z)
 {
 	int     imageWidth;
 	int     imageHeight;
@@ -107,10 +98,10 @@ void 	    drawMandelbrot(t_env *z)
 
 	imageHeight = 600;
 	imageWidth  = 600;
-	maxR = 1.2;
-	minR = -1.5;
-	maxI = 1.5;
-	minI = -1.5;
+	maxR = 1.9;
+	minR = -1.9;
+	maxI = 1.9;
+	minI = -1.9;
 	x = 0;
 	y = 0;
 	while(y < imageHeight)
@@ -118,9 +109,9 @@ void 	    drawMandelbrot(t_env *z)
 		x = 0;
 		while (x < imageWidth)
 		{
-			cr = mapToReal(x, imageWidth, minR, maxR + z->zoom);
-			ci = mapToimaginary(y, imageHeight, minI, maxI + z->zoom);
-			n = findMandelbrot(cr, ci, 255);
+			cr = mapToRealJ(x, imageWidth, minR, maxR + z->zoom);
+			ci = mapToimaginaryJ(y, imageHeight, minI, maxI + z->zoom);
+			n = findJulia(cr, ci, 255);
 			if (n > 0 && n < 25)
 			{
 				z->r = (n * 4) % 150;
@@ -151,18 +142,14 @@ void 	    drawMandelbrot(t_env *z)
 				z->g = (n * 90) % 255;
 				z->b = (n * 90) % 255;  
 			}
+
 			col = colorConverter(z);
 			mlx_pixel_put(z->mlx, z->win, x, y, col);
-//			if (n != 255)
-//				mlx_put_pixel_image(x, y, z, n);
 			x++;
 		}
 		y++;
 	}
-//	z->ima = mlx_new_image(z->mlx, WIN_X, WIN_Y);
-	mlx_key_hook(z->win, my_key_funct, &(*z));
-	mlx_mouse_hook(z->win, my_key_funct, &(*z));
-//	z->data = (int *)mlx_get_data_addr(&z->ima, &z->bpp, &z->sizel, &z->endian);
-//	mlx_put_image_to_window(z->mlx, z->win, z->ima, 0, 0);
+	mlx_key_hook(z->win, my_key_functJ, &(*z));
+	mlx_mouse_hook(z->win, my_key_functJ, &(*z));
 	mlx_loop(z->mlx);
 }

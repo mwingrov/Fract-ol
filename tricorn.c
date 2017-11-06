@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   mandelbrot.c                                       :+:      :+:    :+:   */
+/*   tricorn.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mwingrov <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -12,7 +12,7 @@
 
 #include "fractal.h"
 
-int 	colorConverter(t_env *z)
+int 	colorConverterT(t_env *z)
 {
 	int   hexValue;
 
@@ -22,7 +22,7 @@ int 	colorConverter(t_env *z)
 	return (hexValue); 
 }
 
-int		findMandelbrot(double cr, double ci, int max_iterations)
+int		findTricorn(double cr, double ci, int max_iterations)
 {
 	int		i;
 	double	zr;
@@ -38,7 +38,7 @@ int		findMandelbrot(double cr, double ci, int max_iterations)
 	{
 		zrzr = zr * zr;
 		zizi = zi * zi;
-		temp = -2.0 * zr * zi;
+		temp = 2.0 * zr * zi;
 		zr = zizi - zrzr - cr;
 		zi = temp - ci;
 		if (zrzr * zrzr + zizi * zizi > 4.0)
@@ -48,7 +48,7 @@ int		findMandelbrot(double cr, double ci, int max_iterations)
 	return (i);
 }
 
-double		mapToReal(int x, int imageWidth, double minR, double maxR)
+double		mapToRealT(int x, int imageWidth, double minR, double maxR)
 {
 	double range;
 
@@ -56,7 +56,7 @@ double		mapToReal(int x, int imageWidth, double minR, double maxR)
 	return (x * (range / imageWidth) + minR);
 }
 
-double		mapToimaginary(int y, int imageHeight, double minI, double maxI)
+double		mapToimaginaryT(int y, int imageHeight, double minI, double maxI)
 {
 	double range;
 
@@ -64,7 +64,7 @@ double		mapToimaginary(int y, int imageHeight, double minI, double maxI)
 	return (y * (range / imageHeight) + minI);
 }
 
-void    mlx_put_pixel_image(int x, int y, t_env *z, int color)
+void    mlx_put_pixel_imageT(int x, int y, t_env *z, int color)
 {
 	int pos;
 
@@ -72,10 +72,8 @@ void    mlx_put_pixel_image(int x, int y, t_env *z, int color)
 	z->data[pos] = color;
 }
 
-int		my_key_funct(int keycode, int x, int y, t_env *z)
+int		my_key_functT(int	keycode, int x, int y, t_env *z)
 {
-	x = 600;
-	y = 600;
 	if (keycode == 53)
 		exit(0);
 	if (keycode == 1 || (keycode == 5 && x <= WIN_X))
@@ -86,11 +84,11 @@ int		my_key_funct(int keycode, int x, int y, t_env *z)
 	{
 		z->zoom -= 0.2;
 	}
-	drawMandelbrot(z);
+	drawTricorn(z);
 	return(0);
 }
 
-void 	    drawMandelbrot(t_env *z)
+void 	    drawTricorn(t_env *z)
 {
 	int     imageWidth;
 	int     imageHeight;
@@ -118,9 +116,9 @@ void 	    drawMandelbrot(t_env *z)
 		x = 0;
 		while (x < imageWidth)
 		{
-			cr = mapToReal(x, imageWidth, minR, maxR + z->zoom);
-			ci = mapToimaginary(y, imageHeight, minI, maxI + z->zoom);
-			n = findMandelbrot(cr, ci, 255);
+			cr = mapToRealT(x, imageWidth, minR, maxR + z->zoom);
+			ci = mapToimaginaryT(y, imageHeight, minI, maxI + z->zoom);
+			n = findTricorn(cr, ci, 255);
 			if (n > 0 && n < 25)
 			{
 				z->r = (n * 4) % 150;
@@ -153,16 +151,18 @@ void 	    drawMandelbrot(t_env *z)
 			}
 			col = colorConverter(z);
 			mlx_pixel_put(z->mlx, z->win, x, y, col);
-//			if (n != 255)
-//				mlx_put_pixel_image(x, y, z, n);
+//			mlx_put_pixel_image(x, y, z, n);
 			x++;
 		}
 		y++;
 	}
 //	z->ima = mlx_new_image(z->mlx, WIN_X, WIN_Y);
-	mlx_key_hook(z->win, my_key_funct, &(*z));
-	mlx_mouse_hook(z->win, my_key_funct, &(*z));
+//	mlx_destroy_image(z->mlx, z->ima);
+//	mlx_clear_window(z->mlx, z->win);
 //	z->data = (int *)mlx_get_data_addr(&z->ima, &z->bpp, &z->sizel, &z->endian);
+	mlx_key_hook(z->win, my_key_funct, &z);
+	mlx_mouse_hook(z->win, my_key_functT, &(*z));
 //	mlx_put_image_to_window(z->mlx, z->win, z->ima, 0, 0);
+//	mlx_key_hook(color->win, my_key_funct, 0);
 	mlx_loop(z->mlx);
 }
